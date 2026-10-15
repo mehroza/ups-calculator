@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Equipment UPS Sizing Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-blue-900 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i data-lucide="zap" class="w-8 h-8 text-yellow-400"></i>
+                <h1 class="text-2xl font-bold">UPS Load Calculator</h1>
+            </div>
+            <div class="bg-blue-800 px-4 py-2 rounded-lg border border-blue-700 flex items-center gap-2">
+                <i data-lucide="plug" class="w-5 h-5 text-gray-300"></i>
+                <span class="font-semibold text-sm tracking-wide">UPS Input Voltage: 220/230V</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left Column: Add Equipment & Settings -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+                    <i data-lucide="server" class="w-5 h-5 text-blue-600"></i>
+                    Add Equipment
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Standard Mode -->
+                    <div id="standard-mode">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <select id="cat-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border mb-3">
+                            <option value="">Select Category...</option>
+                        </select>
+
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                        <select id="model-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border mb-3" disabled>
+                            <option value="">Select Model...</option>
+                        </select>
+                    </div>
+
+                    <!-- Custom Mode Toggle -->
+                    <div class="flex items-center gap-2 mb-2">
+                        <input type="checkbox" id="custom-toggle" class="rounded text-blue-600 focus:ring-blue-500">
+                        <label for="custom-toggle" class="text-sm text-gray-600 cursor-pointer">Add Custom Equipment</label>
+                    </div>
+
+                    <!-- Custom Inputs -->
+                    <div id="custom-mode" class="hidden space-y-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">Custom Category Name</label>
+                            <input type="text" id="custom-cat" class="w-full p-2 border rounded-md text-sm" placeholder="e.g. Storage">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">Custom Model Name</label>
+                            <input type="text" id="custom-model" class="w-full p-2 border rounded-md text-sm" placeholder="e.g. NAS 4-Bay">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-600">Power Consumption (Watts)</label>
+                            <input type="number" id="custom-watts" class="w-full p-2 border rounded-md text-sm" placeholder="e.g. 150">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                        <input type="number" id="qty-input" value="1" min="1" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    </div>
+
+                    <button id="add-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-150 flex justify-center items-center gap-2">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                        Add to Load
+                    </button>
+                </div>
+            </div>
+
+            <!-- Configuration Options -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-gray-600"></i>
+                    Sizing Options
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Extra Power for Future Expansion</label>
+                        <select id="expansion-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                            <option value="0">0% (Current Load Only)</option>
+                            <option value="10">10%</option>
+                            <option value="20">20%</option>
+                            <option value="30">30%</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-start gap-3">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5"></i>
+                        <div>
+                            <p class="text-sm font-semibold text-blue-800">Desired Runtime: 30 minutes</p>
+                            <p class="text-xs text-blue-600 mt-1">This is for informational/planning purposes. Click the runtime graph links in recommendations to verify exact times.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Load Summary & Recommendations -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Summary Table -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+                    <i data-lucide="list" class="w-5 h-5 text-blue-600"></i>
+                    Load Summary
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse mb-4">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-600 text-sm border-b">
+                                <th class="p-3">Category</th>
+                                <th class="p-3">Model</th>
+                                <th class="p-3 text-center">Watts (Unit)</th>
+                                <th class="p-3 text-center">Qty</th>
+                                <th class="p-3 text-right">Total Watts</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="load-table-body" class="text-sm">
+                            <tr>
+                                <td colspan="6" class="p-6 text-center text-gray-400">No equipment added yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <div class="flex justify-between py-1 text-sm text-gray-600">
+                        <span>Base Equipment Load:</span>
+                        <span id="base-w-display" class="font-medium">0 W</span>
+                    </div>
+                    <div class="flex justify-between py-1 text-sm text-gray-600">
+                        <span>Future Expansion (<span id="expansion-lbl">0</span>%):</span>
+                        <span id="expansion-w-display" class="font-medium">0 W</span>
+                    </div>
+                    <div class="border-t border-gray-300 my-2 pt-2 flex justify-between font-bold text-gray-800 text-lg">
+                        <span>Final Calculated Load:</span>
+                        <span id="final-w-display" class="text-blue-600">0 W</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- UPS Recommendation -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold mb-4 flex items-center gap-2 border-b pb-2">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-green-600"></i>
+                    UPS Options
+                </h2>
+
+                <div class="mb-4 text-sm text-gray-700 bg-blue-50 p-3 rounded-lg border border-blue-100 flex items-center gap-2">
+                    <i data-lucide="battery-charging" class="w-5 h-5 text-blue-600"></i>
+                    <span><strong>Battery type:</strong> Lead acid</span>
+                </div>
+
+                <div class="mb-4 bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-sm text-yellow-800">
+                    <strong>80% Rule (Safety Margin) Applied:</strong> To ensure maximum continuous operating reliability, the UPS shouldn't be loaded beyond 80% of its maximum Watt rating.
+                    <br>
+                    Minimum required UPS Rating: <span id="target-w" class="font-bold text-red-600">0</span> Watts.
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Select Recommended Model</label>
+                        <select id="ups-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border" disabled>
+                            <option value="">Add equipment to see recommendations...</option>
+                        </select>
+                    </div>
+
+                    <div id="runtime-panel" class="bg-gray-50 p-4 rounded-lg border border-gray-200 hidden fade-in flex flex-col justify-center items-center text-center">
+                        <i data-lucide="line-chart" class="w-8 h-8 text-green-600 mb-2"></i>
+                        <h3 class="text-sm font-bold text-gray-700 mb-1">Verify Runtime Configuration</h3>
+                        <a id="apc-link" href="#" target="_blank" class="text-sm bg-green-100 text-green-800 hover:bg-green-200 px-3 py-2 rounded-md font-medium inline-flex items-center gap-1 transition">
+                            View APC Runtime Graph 
+                            <i data-lucide="external-link" class="w-4 h-4"></i>
+                        </a>
+                        <p class="text-xs text-gray-500 mt-2" id="no-link-msg" style="display:none;">Graph link not provided for this model. Please check standard APC documentation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-4 pb-8 sm:px-6 lg:px-8">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex gap-3 items-start shadow-sm">
+            <i data-lucide="alert-triangle" class="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0"></i>
+            <p class="text-sm text-red-800 font-medium leading-relaxed">
+                UPS model suggestions are for reference only and are not final recommendations. Final selection is subject to technical suitability, availability, cost, and the required approvals
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // --- EQUIPMENT DATA ---
+        let equipmentData = {
+            "Switch": [
+                { name: "Cisco Catalyst WS-C2960X-24PD-L", watts: 470 },
+                { name: "Cisco Catalyst WS-C2960X-24PS-L", watts: 470 },
+                { name: "Cisco Catalyst WS-C2960X-48FPD-L", watts: 890 },
+                { name: "Cisco Catalyst WS-C2960X-48FPS-L", watts: 890 },
+                { name: "Cisco Catalyst C9300-48P", watts: 715 },
+                { name: "Cisco Catalyst C9200L-24P- 4G", watts: 466 },
+                { name: "Cisco Catalyst C9200L-48P- 4G", watts: 740 },
+                { name: "Cisco Catalyst C9200L-24P- 4X", watts: 466 },
+                { name: "Cisco Catalyst C9200L-48P- 4X", watts: 740 },
+                { name: "Cisco Smart CBS350-24P-4G", watts: 236 },
+                { name: "Cisco Smart CBS350-48P-4G", watts: 445 },
+                { name: "Cisco Smart CBS350-24FP-4G", watts: 438 },
+                { name: "Cisco Smart CBS350-48FP-4G", watts: 859 },
+                { name: "Cisco Smart CBS350-24P-4X", watts: 236 },
+                { name: "Cisco Smart CBS350-24FP-4X", watts: 437 },
+                { name: "Cisco Catalyst C1300-24P-4G", watts: 230 },
+                { name: "Cisco Catalyst C1300-48P-4G", watts: 437 },
+                { name: "Cisco Catalyst C1300-24FP-4G", watts: 436 },
+                { name: "Cisco Catalyst C1300-48FP-4G", watts: 819 },
+                { name: "Cisco Catalyst C1200-24P-4G", watts: 230 },
+                { name: "Cisco Catalyst C1200-48P-4G", watts: 437 },
+                { name: "Cisco Catalyst C1200-24FP-4G", watts: 429 },
+                { name: "Cisco Smart SG300-28PP", watts: 213 },
+                { name: "Cisco Smart SG200-26P", watts: 137 },
+                { name: "Cisco Smart SG200-50FP", watts: 430 },
+                { name: "Cisco Smart SG220-26P", watts: 200 },
+                { name: "Cisco Smart SG350-28P", watts: 195 },
+                { name: "Cisco Smart SF220-24P", watts: 188 },
+                { name: "Hikvision DS-3E1552P-SI", watts: 500 },
+                { name: "Cisco Smart SF220-48P", watts: 405 },
+                { name: "Cisco Smart SG220-50P", watts: 427 }
+            ],
+            "NVR": [
+                { name: "Hikvision DS-7604NI-E1", watts: 10 },
+                { name: "Hikvision DS-7616NI-K2/16P", watts: 15 },
+                { name: "Hikvision DS-7716NI-E4", watts: 20 },
+                { name: "Hikvision DS-7716NI-I4", watts: 20 },
+                { name: "Hikvision DS-7732NI-E4", watts: 20 },
+                { name: "Hikvision DS-9632NI-I8", watts: 30 },
+                { name: "Hikvision DS-9632NI-I16", watts: 45 },
+                { name: "Hikvision DS-9664NI-I16", watts: 45 },
+                { name: "Hikvision DS-96064NI-I16", watts: 140 },
+                { name: "Hikvision DS-96128NI-E24", watts: 140 }
+            ],
+            "NVR Hard Disk": [
+                { name: "WD Purple (8TB: 5.3 W)", watts: 6 },
+                { name: "WD Purple (6TB: 4.7 W)", watts: 5 },
+                { name: "WD Purple (4TB: 4.6 W)", watts: 5 },
+                { name: "WD Purple (10TB:9.1 W)", watts: 10 }
+            ],
+            "Server": [
+                { name: "Dell PowerEdge R210 II", watts: 250 },
+                { name: "Dell PowerEdge R710", watts: 570 },
+                { name: "Dell PowerEdge T410", watts: 525 },
+                { name: "Dell PowerEdge R730", watts: 750 },
+                { name: "HP ProLiant DL380 Gen 9", watts: 800 },
+                { name: "HP ProLiant DL380 Gen 10", watts: 800 },
+                { name: "HP ProLiant DL380 Gen 7", watts: 572 },
+                { name: "HP ProLiant DL360 Gen 9", watts: 404 },
+                { name: "HP ProLiant DL160 Gen 6", watts: 387 },
+                { name: "HP ProLiant DL180 Gen 6", watts: 673 },
+                { name: "HP ProLiant DL380p Gen 8", watts: 752 }
+            ],
+            "Firewall": [
+                { name: "FortiGate 80F", watts: 16 },
+                { name: "FortiGate 91G", watts: 24 },
+                { name: "FortiGate 100E", watts: 29 },
+                { name: "FortiGate 200D", watts: 83 },
+                { name: "FortiGate 200F", watts: 204 },
+                { name: "FortiGate 301E", watts: 108 }
+            ],
+            "Router": [
+                { name: "Cisco 881", watts: 60 },
+                { name: "Cisco 1921", watts: 70 },
+                { name: "Cisco 4431/4331", watts: 250 },
+                { name: "Cisco C1121-4P", watts: 66 }
+            ],
+            "Storage": []
+        };
+
+        // --- UPS DATABASE ---
+        const upsDatabase = [
+            { name: "APC Smart-UPS, Line Interactive, 1000VA, Tower, 230V (SMT1000IC)", maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000IC/apc-smartups-line-interactive-1000va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS, Line Interactive, 1000VA, Rackmount 2U, 230V (SMT1000RMI2UC)", maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000RMI2UC/apc-smartups-line-interactive-1000va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS, Line Interactive, 1500VA, Tower, 230V, (SMT1500IC)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500IC/apc-smartups-line-interactive-1500va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS, Line Interactive, 1500VA, Rackmount 2U, 230V, (SMT1500RMI2UC)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500RMI2UC/apc-smartups-line-interactive-1500va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS, Line Interactive, 2200VA, Rackmount 2U, 230V, (SMT2200RMI2UC)", maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SMT2200RMI2UC/apc-smartups-line-interactive-2200va-rackmount-2u-230v-8x-iec-c13+2x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS, Line Interactive, 3kVA, Rackmount 2U, 230V (SMT3000RMI2UC)", maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT3000RMI2UC/apc-smartups-line-interactive-3kva-rackmount-2u-230v-8x-iec-c13+1x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/" },
+            { name: "APC Smart-UPS On-Line, 1000VA,Tower 230V, Extended runtime (SRT1000XLI)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000XLI/apc-smartups-online-1000va-1000w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 1500VA,Tower 230V, Extended runtime (SRT1500XLI)", maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500XLI/apc-smartups-online-1500va-1500w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 2200VA,Tower 230V, Extended runtime (SRT2200XLI)", maxWatts: 2200, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200XLI/apc-smartups-online-2200va-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 3kVA,Tower 230V, Extended runtime (SRT3000XLI)", maxWatts: 3000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000XLI/apc-smartups-online-3kva-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 5kVA,Tower 230V, Extended runtime (SRT5000XLI)", maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KXLI/apc-smartups-online-5kva-tower-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-o-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 1000VA,Rackmount, 230V, Extended runtime (SRT1000RMXLI)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000RMXLI/apc-smartups-online-1000va-1000w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 1500VA,Rackmount, 230V, Extended runtime (SRT1500RMXLI)", maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500RMXLI/apc-smartups-online-1500va-1500w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 2200VA,Rackmount, 230V, Extended runtime (SRT2200RMXLI)", maxWatts: 2200, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200RMXLI/apc-smartups-online-2200va-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 3000VA,Rackmount, 230V, Extended runtime (SRT3000RMXLI)", maxWatts: 3000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000RMXLI/apc-smartups-online-3kva-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/" },
+            { name: "APC Smart-UPS On-Line, 5kVA, Rackmount 3U, 230V, Extended runtime (SRT5000RMXLI)", maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KRMXLI/apc-smartups-online-5kva-rackmount-3u-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-rail-kit/" },
+            { name: "APC Smart-UPS 5000VA 230V Rackmount/Tower, Legacy (SUA5000RMI5U)", maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SUA5000RMI5U/apc-smartups-5000va-230v-rackmount-tower/" }
+        ];
+
+        let loadItems = [];
+        let baseWatts = 0;
+        let finalWatts = 0;
+
+        // --- DOM ELEMENTS ---
+        const catSelect = document.getElementById('cat-select');
+        const modelSelect = document.getElementById('model-select');
+        const addBtn = document.getElementById('add-btn');
+        const customToggle = document.getElementById('custom-toggle');
+        const standardMode = document.getElementById('standard-mode');
+        const customMode = document.getElementById('custom-mode');
+        const loadTableBody = document.getElementById('load-table-body');
+        const expansionSelect = document.getElementById('expansion-select');
+        const upsSelect = document.getElementById('ups-select');
+        const runtimePanel = document.getElementById('runtime-panel');
+        const apcLink = document.getElementById('apc-link');
+        const noLinkMsg = document.getElementById('no-link-msg');
+        
+        // --- INITIALIZATION ---
+        function init() {
+            lucide.createIcons();
+            populateCategories();
+            
+            // Re-calculate when expansion % changes
+            expansionSelect.addEventListener('change', updateSummary);
+        }
+
+        function populateCategories() {
+            catSelect.innerHTML = '<option value="">Select Category...</option>';
+            Object.keys(equipmentData).forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                catSelect.appendChild(opt);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        catSelect.addEventListener('change', (e) => {
+            const cat = e.target.value;
+            modelSelect.innerHTML = '<option value="">Select Model...</option>';
+            if (cat && equipmentData[cat]) {
+                equipmentData[cat].forEach((item, index) => {
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    opt.textContent = `${item.name} (${item.watts}W)`;
+                    modelSelect.appendChild(opt);
+                });
+                modelSelect.disabled = false;
+            } else {
+                modelSelect.disabled = true;
+            }
+        });
+
+        customToggle.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                standardMode.classList.add('hidden');
+                customMode.classList.remove('hidden');
+            } else {
+                standardMode.classList.remove('hidden');
+                customMode.classList.add('hidden');
+            }
+        });
+
+        addBtn.addEventListener('click', () => {
+            let cat, model, watts;
+            const qty = parseInt(document.getElementById('qty-input').value) || 1;
+
+            if (customToggle.checked) {
+                cat = document.getElementById('custom-cat').value.trim() || 'Custom';
+                model = document.getElementById('custom-model').value.trim();
+                watts = parseInt(document.getElementById('custom-watts').value);
+
+                if (!model || isNaN(watts)) {
+                    alert('Please enter a valid Custom Model Name and Power Consumption.');
+                    return;
+                }
+                
+                if (!equipmentData[cat]) { equipmentData[cat] = []; }
+                equipmentData[cat].push({ name: model, watts: watts });
+                populateCategories(); 
+                
+            } else {
+                cat = catSelect.value;
+                const modelIndex = modelSelect.value;
+                if (!cat || modelIndex === "") {
+                    alert('Please select a Category and Model.');
+                    return;
+                }
+                const selectedEq = equipmentData[cat][modelIndex];
+                model = selectedEq.name;
+                watts = selectedEq.watts;
+            }
+
+            loadItems.push({ id: Date.now(), category: cat, model: model, watts: watts, qty: qty });
+            
+            document.getElementById('qty-input').value = 1;
+            if (customToggle.checked) {
+                document.getElementById('custom-model').value = '';
+                document.getElementById('custom-watts').value = '';
+            } else {
+                modelSelect.value = '';
+            }
+
+            updateSummary();
+        });
+
+        upsSelect.addEventListener('change', showLink);
+
+        // --- CORE LOGIC ---
+        function updateSummary() {
+            baseWatts = 0;
+            loadTableBody.innerHTML = '';
+
+            if (loadItems.length === 0) {
+                loadTableBody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-gray-400">No equipment added yet.</td></tr>';
+                resetDisplays();
+                return;
+            }
+
+            loadItems.forEach((item) => {
+                const itemTotalW = item.watts * item.qty;
+                baseWatts += itemTotalW;
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-gray-100 hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3">${item.category}</td>
+                    <td class="p-3 font-medium">${item.model}</td>
+                    <td class="p-3 text-center">${item.watts}W</td>
+                    <td class="p-3 text-center">${item.qty}</td>
+                    <td class="p-3 text-right font-semibold">${itemTotalW}W</td>
+                    <td class="p-3 text-center">
+                        <button onclick="removeItem(${item.id})" class="text-red-500 hover:text-red-700 transition">
+                            <i data-lucide="trash-2" class="w-4 h-4 mx-auto"></i>
+                        </button>
+                    </td>
+                `;
+                loadTableBody.appendChild(tr);
+            });
+
+            // Calculate Expansions
+            const expPercent = parseInt(expansionSelect.value);
+            const expWatts = Math.ceil(baseWatts * (expPercent / 100));
+            finalWatts = baseWatts + expWatts;
+
+            // Update UI
+            document.getElementById('base-w-display').textContent = `${baseWatts} W`;
+            document.getElementById('expansion-lbl').textContent = expPercent;
+            document.getElementById('expansion-w-display').textContent = `${expWatts} W`;
+            document.getElementById('final-w-display').textContent = `${finalWatts} W`;
+            
+            lucide.createIcons();
+            updateUPSRecommendations();
+        }
+
+        function resetDisplays() {
+            document.getElementById('base-w-display').textContent = '0 W';
+            document.getElementById('expansion-lbl').textContent = expansionSelect.value;
+            document.getElementById('expansion-w-display').textContent = '0 W';
+            document.getElementById('final-w-display').textContent = '0 W';
+            document.getElementById('target-w').textContent = '0';
+            upsSelect.innerHTML = '<option value="">Add equipment to see recommendations...</option>';
+            upsSelect.disabled = true;
+            runtimePanel.classList.add('hidden');
+            lucide.createIcons();
+        }
+
+        window.removeItem = function(id) {
+            loadItems = loadItems.filter(item => item.id !== id);
+            updateSummary();
+        }
+
+        function updateUPSRecommendations() {
+            // CHANGE: The 80% Rule (Safety Margin)
+            // Required UPS Rating >= Total Load / 0.8
+            const requiredUpsWatts = Math.ceil(finalWatts / 0.8);
+            document.getElementById('target-w').textContent = requiredUpsWatts;
+            
+            upsSelect.innerHTML = '<option value="">-- Choose a recommended UPS --</option>';
+            let foundUPS = false;
+
+            upsDatabase.forEach((ups, index) => {
+                if (ups.maxWatts >= requiredUpsWatts) {
+                    foundUPS = true;
+                    const opt = document.createElement('option');
+                    opt.value = index;
+                    
+                    // Show exact utilization based on the 80% boundary
+                    const utilPercent = Math.round((finalWatts / ups.maxWatts) * 100);
+                    opt.textContent = `${ups.name} [Max: ${ups.maxWatts}W | Load: ${utilPercent}%]`;
+                    upsSelect.appendChild(opt);
+                }
+            });
+
+            if (!foundUPS) {
+                upsSelect.innerHTML = '<option value="">No standard UPS large enough found. Load exceeds 4.5kW limit.</option>';
+                upsSelect.disabled = true;
+                runtimePanel.classList.add('hidden');
+            } else {
+                upsSelect.disabled = false;
+                upsSelect.selectedIndex = 1; // Auto-select first available valid option
+                showLink();
+            }
+        }
+
+        function showLink() {
+            const index = upsSelect.value;
+            if (index === "") {
+                runtimePanel.classList.add('hidden');
+                return;
+            }
+
+            const ups = upsDatabase[index];
+            if (ups.link && ups.link !== "") {
+                apcLink.href = ups.link;
+                apcLink.style.display = "inline-flex";
+                noLinkMsg.style.display = "none";
+            } else {
+                apcLink.href = "#";
+                apcLink.style.display = "none";
+                noLinkMsg.style.display = "block";
+            }
+            
+            runtimePanel.classList.remove('hidden');
+        }
+
+        // Run
+        init();
+    </script>
+</body>
+</html>
