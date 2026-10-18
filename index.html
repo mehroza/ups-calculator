@@ -172,12 +172,22 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Select UPS Model</label>
-                        <select id="ups-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border" disabled>
-                            <option value="">Add equipment to see suggestions...</option>
-                        </select>
-                        <p class="text-xs text-gray-500 mt-2">Required capacity headroom target: <span id="target-w" class="font-bold text-gray-700">0</span> W.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Select UPS Model</label>
+                            <select id="ups-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border" disabled>
+                                <option value="">Add equipment to see suggestions...</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-2">Required capacity headroom target: <span id="target-w" class="font-bold text-gray-700">0</span> W.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">External Battery Packs</label>
+                            <select id="battery-select" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-green-500 focus:ring-green-500 p-2 border disabled:bg-gray-100 disabled:text-gray-400" disabled>
+                                <option value="0">0 (Internal Battery Only)</option>
+                                <option value="1">1 Extra Battery Pack</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div id="runtime-panel" class="bg-gray-50 p-4 rounded-lg border border-gray-200 hidden fade-in flex flex-col justify-center">
@@ -186,10 +196,10 @@
                             <div>
                                 <h3 class="text-sm font-bold text-gray-700">Estimated Runtime</h3>
                                 <p id="runtime-display" class="text-2xl font-black text-green-600">-- mins</p>
-                                <p class="text-xs text-gray-500 font-medium">Desired Runtime Indicator: <span class="text-blue-600 font-semibold">30 minutes</span></p>
+                                <p class="text-xs text-gray-500 font-medium mt-1">Desired Runtime Indicator: <span class="text-blue-600 font-semibold">30 minutes</span></p>
                             </div>
                         </div>
-                        <a id="apc-link" href="#" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline mt-2 flex items-center gap-1">
+                        <a id="apc-link" href="#" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline mt-3 flex items-center gap-1">
                             Official APC Runtime Graph URL
                             <i data-lucide="external-link" class="w-3 h-3"></i>
                         </a>
@@ -203,7 +213,7 @@
     <footer class="bg-gray-100 border-t border-gray-200 py-4 mt-auto">
         <div class="max-w-7xl mx-auto px-4 text-center">
             <p class="text-xs text-gray-500 leading-relaxed">
-                <span class="font-semibold text-gray-600">Disclaimer:</span> UPS model suggestions are for reference only and are not final recommendations. 
+                <span class="font-semibold text-gray-600">Disclaimer:</span> UPS model suggestions are for reference only and are not final recommendations. Final selection is subject to technical suitability, availability, cost, and the required approvals.
             </p>
         </div>
     </footer>
@@ -302,25 +312,29 @@
             ]
         };
 
-        // UPS Database with exact APC graph data points [Watts, Seconds]
+        // UPS Database with internal curve and extra battery curve
         const upsDatabase = [
-            { id: "SMT1000IC", name: "APC Smart-UPS Line Interactive, 1000VA, Tower, 230V (SMT1000IC)", va: 1000, maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000IC/apc-smartups-line-interactive-1000va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 6000], [150, 3840], [200, 2700], [250, 1920], [300, 1485], [350, 1143], [400, 898], [450, 720], [500, 589], [700, 349]] },
-            { id: "SMT1000RMI2UC", name: "APC Smart-UPS Line Interactive, 1000VA, Rackmount 2U, 230V (SMT1000RMI2UC)", va: 1000, maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000RMI2UC/apc-smartups-line-interactive-1000va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 9300], [200, 4200], [300, 2340], [400, 1504], [500, 1004], [600, 705], [700, 522]] },
-            { id: "SMT1500IC", name: "APC Smart-UPS Line Interactive, 1500VA, Tower, 230V, (SMT1500IC)", va: 1500, maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500IC/apc-smartups-line-interactive-1500va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 10320], [200, 5040], [300, 3000], [400, 1980], [500, 1384], [600, 998], [700, 743]] },
-            { id: "SMT1500RMI2UC", name: "APC Smart-UPS Line Interactive, 1500VA, Rackmount 2U, 230V, (SMT1500RMI2UC)", va: 1500, maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500RMI2UC/apc-smartups-line-interactive-1500va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 8400], [200, 4020], [300, 2520], [400, 1765], [500, 1311], [600, 1013], [700, 803]] },
-            { id: "SMT2200RMI2UC", name: "APC Smart-UPS Line Interactive, 2200VA, Rackmount 2U, 230V, (SMT2200RMI2UC)", va: 2200, maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SMT2200RMI2UC/apc-smartups-line-interactive-2200va-rackmount-2u-230v-8x-iec-c13+2x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[198, 5580], [200, 5520], [400, 2760], [600, 1791], [800, 1269], [1000, 953], [1200, 742]] },
-            { id: "SMT3000RMI2UC", name: "APC Smart-UPS Line Interactive, 3kVA, Rackmount 2U, 230V (SMT3000RMI2UC)", va: 3000, maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT3000RMI2UC/apc-smartups-line-interactive-3kva-rackmount-2u-230v-8x-iec-c13+1x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[270, 4320], [500, 2280], [1000, 1036], [1500, 588], [2000, 364], [2500, 231], [2700, 191]] },
-            { id: "SRT1000XLI", name: "APC Smart-UPS On-Line, 1000VA,Tower 230V, Extended runtime (SRT1000XLI)", va: 1000, maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000XLI/apc-smartups-online-1000va-1000w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[100, 7200], [200, 3540], [300, 2280], [400, 1653], [500, 1268], [600, 1012], [700, 830]] },
-            { id: "SRT1500XLI", name: "APC Smart-UPS On-Line, 1500VA,Tower  230V, Extended runtime (SRT1500XLI)", va: 1500, maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500XLI/apc-smartups-online-1500va-1500w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[150, 5040], [200, 3780], [300, 2460], [400, 1800], [500, 1403], [600, 1128], [700, 931]] },
-            { id: "SRT2200XLI", name: "APC Smart-UPS On-Line, 2200VA,Tower 230V, Extended runtime (SRT2200XLI)", va: 2200, maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200XLI/apc-smartups-online-2200va-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[198, 4320], [200, 4260], [400, 2040], [600, 1306], [800, 918], [1000, 686], [1200, 532]] },
-            { id: "SRT3000XLI", name: "APC Smart-UPS On-Line, 3kVA,Tower 230V, Extended runtime (SRT3000XLI)", va: 3000, maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000XLI/apc-smartups-online-3kva-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[270, 4440], [500, 2280], [1000, 1043], [1500, 613], [2000, 401], [2500, 275], [2700, 238]] },
-            { id: "SRT5KXLI", name: "APC Smart-UPS On-Line, 5kVA,Tower 230V, Extended runtime (SRT5000XLI)", va: 5000, maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KXLI/apc-smartups-online-5kva-tower-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-o-rail-kit/", curve: [[450, 4260], [500, 3840], [1000, 1860], [1500, 1177], [2000, 823], [2500, 611], [3000, 470], [3500, 370]] },
-            { id: "SRT1000RMXLI", name: "APC Smart-UPS On-Line, 1000VA,Rackmount, 230V, Extended runtime (SRT1000RMXLI)", va: 1000, maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000RMXLI/apc-smartups-online-1000va-1000w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[100, 7200], [200, 3540], [300, 2280], [400, 1653], [500, 1268], [600, 1012], [700, 830]] },
-            { id: "SRT1500RMXLI", name: "APC Smart-UPS On-Line, 1500VA,Rackmount, 230V, Extended runtime (SRT1500RMXLI)", va: 1500, maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500RMXLI/apc-smartups-online-1500va-1500w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[150, 5040], [200, 3780], [300, 2460], [400, 1800], [500, 1403], [600, 1128], [700, 931]] },
-            { id: "SRT2200RMXLI", name: "APC Smart-UPS On-Line, 2200VA,Rackmount, 230V, Extended runtime (SRT2200RMXLI)", va: 2200, maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200RMXLI/apc-smartups-online-2200va-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[198, 4320], [200, 4260], [400, 2040], [600, 1306], [800, 918], [1000, 686], [1200, 532], [1400, 423]] },
-            { id: "SRT3000RMXLI", name: "APC Smart-UPS On-Line, 3000VA,Rackmount, 230V, Extended runtime (SRT3000RMXLI)", va: 3000, maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000RMXLI/apc-smartups-online-3kva-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[270, 4440], [500, 2280], [1000, 1043], [1500, 613], [2000, 401], [2500, 275], [2700, 238]] },
-            { id: "SRT5KRMXLI", name: "APC Smart-UPS On-Line, 5kVA, Rackmount 3U, 230V, Extended runtime (SRT5000RMXLI)", va: 5000, maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KRMXLI/apc-smartups-online-5kva-rackmount-3u-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-rail-kit/", curve: [[450, 4260], [500, 3840], [1000, 1860], [1500, 1177], [2000, 823], [2500, 611], [3000, 470], [3500, 370]] },
-            { id: "SUA5000RMI5U", name: "APC Smart-UPS 5000VA 230V Rackmount/Tower, Legacy (SUA5000RMI5U)", va: 5000, maxWatts: 4000, link: "https://www.se.com/sa/en/products-runtime-graph/SUA5000RMI5U/apc-smartups-5000va-230v-rackmount-tower/", curve: [[400, 10320], [500, 8220], [1000, 3780], [1500, 2280], [2000, 1600], [2500, 1175], [3000, 898], [3500, 704]] }
+            { id: "SMT1000IC", name: "APC Smart-UPS 1000VA Tower (SMT1000IC)", maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000IC/apc-smartups-line-interactive-1000va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 6000], [150, 3840], [200, 2700], [250, 1920], [300, 1485], [350, 1143], [400, 898], [450, 720], [500, 589], [700, 349]], supportsExtra: false },
+            { id: "SMT1000RMI2UC", name: "APC Smart-UPS 1000VA Rackmount 2U (SMT1000RMI2UC)", maxWatts: 700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1000RMI2UC/apc-smartups-line-interactive-1000va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 9300], [200, 4200], [300, 2340], [400, 1504], [500, 1004], [600, 705], [700, 522]], supportsExtra: false },
+            { id: "SMT1500IC", name: "APC Smart-UPS 1500VA Tower (SMT1500IC)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500IC/apc-smartups-line-interactive-1500va-tower-230v-8x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 10320], [200, 5040], [300, 3000], [400, 1980], [500, 1384], [600, 998], [700, 743]], supportsExtra: false },
+            { id: "SMT1500RMI2UC", name: "APC Smart-UPS 1500VA Rackmount 2U (SMT1500RMI2UC)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SMT1500RMI2UC/apc-smartups-line-interactive-1500va-rackmount-2u-230v-4x-iec-c13-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[100, 8400], [200, 4020], [300, 2520], [400, 1765], [500, 1311], [600, 1013], [700, 803]], supportsExtra: false },
+            { id: "SMT2200RMI2UC", name: "APC Smart-UPS 2200VA Rackmount 2U (SMT2200RMI2UC)", maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SMT2200RMI2UC/apc-smartups-line-interactive-2200va-rackmount-2u-230v-8x-iec-c13+2x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[198, 5580], [200, 5520], [400, 2760], [600, 1791], [800, 1269], [1000, 953], [1200, 742]], supportsExtra: false },
+            { id: "SMT3000RMI2UC", name: "APC Smart-UPS 3kVA Rackmount 2U (SMT3000RMI2UC)", maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SMT3000RMI2UC/apc-smartups-line-interactive-3kva-rackmount-2u-230v-8x-iec-c13+1x-iec-c19-outlets-smartconnect-port+smartslot-avr-lcd/", curve: [[270, 4320], [500, 2280], [1000, 1036], [1500, 588], [2000, 364], [2500, 231], [2700, 191]], supportsExtra: false },
+            
+            // SRT Models (Support Extra Battery)
+            { id: "SRT1000XLI", name: "APC Smart-UPS On-Line 1000VA Tower (SRT1000XLI)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000XLI/apc-smartups-online-1000va-1000w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[100, 7200], [200, 3540], [300, 2280], [400, 1653], [500, 1268], [600, 1012], [700, 830]], supportsExtra: true, curveExtra: [[100, 24360], [200, 12240], [300, 8040], [400, 5880], [500, 4620], [600, 3780]] },
+            { id: "SRT1500XLI", name: "APC Smart-UPS On-Line 1500VA Tower (SRT1500XLI)", maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500XLI/apc-smartups-online-1500va-1500w-tower-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[150, 5040], [200, 3780], [300, 2460], [400, 1800], [500, 1403], [600, 1128], [700, 931]], supportsExtra: true, curveExtra: [[150, 17160], [200, 13020], [300, 8640], [400, 6420], [500, 5040], [600, 4140]] },
+            { id: "SRT2200XLI", name: "APC Smart-UPS On-Line 2200VA Tower (SRT2200XLI)", maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200XLI/apc-smartups-online-2200va-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[198, 4320], [200, 4260], [400, 2040], [600, 1306], [800, 918], [1000, 686], [1200, 532]], supportsExtra: true, curveExtra: [[198, 14760], [200, 14580], [400, 7260], [600, 4740], [800, 3420], [1000, 2700]] },
+            { id: "SRT3000XLI", name: "APC Smart-UPS On-Line 3kVA Tower (SRT3000XLI)", maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000XLI/apc-smartups-online-3kva-tower-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-o-rail-kit/", curve: [[270, 4440], [500, 2280], [1000, 1043], [1500, 613], [2000, 401], [2500, 275], [2700, 238]], supportsExtra: true, curveExtra: [[270, 15180], [500, 8160], [1000, 3840], [1500, 2460], [2000, 1766], [2500, 1350]] },
+            { id: "SRT5KXLI", name: "APC Smart-UPS On-Line 5kVA Tower (SRT5000XLI)", maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KXLI/apc-smartups-online-5kva-tower-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-o-rail-kit/", curve: [[450, 4260], [500, 3840], [1000, 1860], [1500, 1177], [2000, 823], [2500, 611], [3000, 470], [3500, 370]], supportsExtra: true, curveExtra: [[450, 14700], [500, 13320], [1000, 6660], [1500, 4320], [2000, 3120], [2500, 2460]] },
+            { id: "SRT1000RMXLI", name: "APC Smart-UPS On-Line 1000VA Rackmount (SRT1000RMXLI)", maxWatts: 1000, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1000RMXLI/apc-smartups-online-1000va-1000w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[100, 7200], [200, 3540], [300, 2280], [400, 1653], [500, 1268], [600, 1012], [700, 830]], supportsExtra: true, curveExtra: [[100, 24360], [200, 12240], [300, 8040], [400, 5880], [500, 4620], [600, 3780]] },
+            { id: "SRT1500RMXLI", name: "APC Smart-UPS On-Line 1500VA Rackmount (SRT1500RMXLI)", maxWatts: 1500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT1500RMXLI/apc-smartups-online-1500va-1500w-rackmount-2u-230v-6x-c13-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[150, 5040], [200, 3780], [300, 2460], [400, 1800], [500, 1403], [600, 1128], [700, 931]], supportsExtra: true, curveExtra: [[150, 17160], [200, 13020], [300, 8640], [400, 6420], [500, 5040], [600, 4140]] },
+            { id: "SRT2200RMXLI", name: "APC Smart-UPS On-Line 2200VA Rackmount (SRT2200RMXLI)", maxWatts: 1980, link: "https://www.se.com/sa/en/products-runtime-graph/SRT2200RMXLI/apc-smartups-online-2200va-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[198, 4320], [200, 4260], [400, 2040], [600, 1306], [800, 918], [1000, 686], [1200, 532], [1400, 423]], supportsExtra: true, curveExtra: [[198, 14760], [200, 14580], [400, 7260], [600, 4740], [800, 3420], [1000, 2700]] },
+            { id: "SRT3000RMXLI", name: "APC Smart-UPS On-Line 3000VA Rackmount (SRT3000RMXLI)", maxWatts: 2700, link: "https://www.se.com/sa/en/products-runtime-graph/SRT3000RMXLI/apc-smartups-online-3kva-rackmount-2u-230v-8x-c13+2x-c19-iec-outlets-smartslot-extended-runtime-w-rail-kit/", curve: [[270, 4440], [500, 2280], [1000, 1043], [1500, 613], [2000, 401], [2500, 275], [2700, 238]], supportsExtra: true, curveExtra: [[270, 15180], [500, 8160], [1000, 3840], [1500, 2460], [2000, 1766], [2500, 1350]] },
+            { id: "SRT5KRMXLI", name: "APC Smart-UPS On-Line 5kVA Rackmount 3U (SRT5000RMXLI)", maxWatts: 4500, link: "https://www.se.com/sa/en/products-runtime-graph/SRT5KRMXLI/apc-smartups-online-5kva-rackmount-3u-230v-6x-c13+4x-c19-iec-outlets-network-card+smartslot-extended-runtime-w-rail-kit/", curve: [[450, 4260], [500, 3840], [1000, 1860], [1500, 1177], [2000, 823], [2500, 611], [3000, 470], [3500, 370]], supportsExtra: true, curveExtra: [[450, 14700], [500, 13320], [1000, 6660], [1500, 4320], [2000, 3120], [2500, 2460]] },
+            
+            // Legacy Model
+            { id: "SUA5000RMI5U", name: "APC Smart-UPS 5000VA Rackmount/Tower (SUA5000RMI5U)", maxWatts: 4000, link: "https://www.se.com/sa/en/products-runtime-graph/SUA5000RMI5U/apc-smartups-5000va-230v-rackmount-tower/", curve: [[400, 10320], [500, 8220], [1000, 3780], [1500, 2280], [2000, 1600], [2500, 1175], [3000, 898], [3500, 704]], supportsExtra: false }
         ];
 
         let loadItems = [];
@@ -339,6 +353,7 @@
         const expansionRow = document.getElementById('expansion-row');
         const marginToggle = document.getElementById('margin-toggle');
         const upsSelect = document.getElementById('ups-select');
+        const batterySelect = document.getElementById('battery-select');
         const runtimePanel = document.getElementById('runtime-panel');
         const runtimeDisplay = document.getElementById('runtime-display');
         const apcLink = document.getElementById('apc-link');
@@ -432,7 +447,18 @@
             updateSummary();
         });
 
-        upsSelect.addEventListener('change', calculateRuntime);
+        // UPS & Battery Triggers
+        upsSelect.addEventListener('change', () => {
+            const ups = upsDatabase.find(u => u.id === upsSelect.value);
+            if (ups && ups.supportsExtra) {
+                batterySelect.disabled = false;
+            } else {
+                batterySelect.value = "0";
+                batterySelect.disabled = true;
+            }
+            calculateRuntime();
+        });
+        batterySelect.addEventListener('change', calculateRuntime);
 
         // --- CORE LOGIC ---
         function updateSummary() {
@@ -445,8 +471,11 @@
                 document.getElementById('total-w-display').textContent = '0 W';
                 document.getElementById('target-w').textContent = '0';
                 expansionRow.classList.add('hidden');
+                
                 upsSelect.innerHTML = '<option value="">Add equipment to see suggestions...</option>';
                 upsSelect.disabled = true;
+                batterySelect.value = "0";
+                batterySelect.disabled = true;
                 runtimePanel.classList.add('hidden');
                 lucide.createIcons();
                 return;
@@ -499,7 +528,6 @@
 
         function updateUPSOptions() {
             const use80Margin = marginToggle.checked;
-            // 80% Rule math: Required Capacity = FinalWatts / 0.80
             const requiredWatts = use80Margin ? (finalWatts / 0.80) : finalWatts;
             
             document.getElementById('target-w').textContent = Math.ceil(requiredWatts);
@@ -508,7 +536,6 @@
             let foundUPS = false;
 
             upsDatabase.forEach((ups) => {
-                // Sizing Filter Check
                 if (ups.maxWatts >= requiredWatts) {
                     foundUPS = true;
                     const opt = document.createElement('option');
@@ -522,11 +549,14 @@
             if (!foundUPS) {
                 upsSelect.innerHTML = '<option value="">No standard UPS large enough found. Consult vendor for high-capacity/3-Phase.</option>';
                 upsSelect.disabled = true;
+                batterySelect.value = "0";
+                batterySelect.disabled = true;
                 runtimePanel.classList.add('hidden');
             } else {
                 upsSelect.disabled = false;
                 upsSelect.selectedIndex = 1; 
-                calculateRuntime();
+                // Manually trigger the UPS change event to set battery support state
+                upsSelect.dispatchEvent(new Event('change'));
             }
         }
 
@@ -539,19 +569,22 @@
             }
 
             const ups = upsDatabase.find(u => u.id === selectedId);
-            if (ups && ups.curve && ups.curve.length > 0) {
-                const curve = ups.curve;
+            
+            // Check if Extra Battery is selected and supported
+            const useExtraBattery = (batterySelect.value === "1" && ups.supportsExtra && ups.curveExtra);
+            const activeCurve = useExtraBattery ? ups.curveExtra : ups.curve;
+
+            if (ups && activeCurve && activeCurve.length > 0) {
                 let estimatedSeconds = 0;
 
-                if (finalWatts <= curve[0][0]) {
-                    estimatedSeconds = curve[0][1];
-                } else if (finalWatts >= curve[curve.length - 1][0]) {
-                    estimatedSeconds = curve[curve.length - 1][1];
+                if (finalWatts <= activeCurve[0][0]) {
+                    estimatedSeconds = activeCurve[0][1];
+                } else if (finalWatts >= activeCurve[activeCurve.length - 1][0]) {
+                    estimatedSeconds = activeCurve[activeCurve.length - 1][1];
                 } else {
-                    // Piecewise Linear Interpolation between curve points
-                    for (let i = 0; i < curve.length - 1; i++) {
-                        const p1 = curve[i];
-                        const p2 = curve[i + 1];
+                    for (let i = 0; i < activeCurve.length - 1; i++) {
+                        const p1 = activeCurve[i];
+                        const p2 = activeCurve[i + 1];
                         if (finalWatts >= p1[0] && finalWatts <= p2[0]) {
                             const ratio = (finalWatts - p1[0]) / (p2[0] - p1[0]);
                             estimatedSeconds = p1[1] + ratio * (p2[1] - p1[1]);
