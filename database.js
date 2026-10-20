@@ -10,6 +10,7 @@ const equipmentData = {
         { name: "Cisco Catalyst C9200L-48P- 4G", watts: 740 },
         { name: "Cisco Catalyst C9200L-24P- 4X", watts: 466 },
         { name: "Cisco Catalyst C9200L-48P- 4X", watts: 740 },
+        { name: "Cisco Smart CBS350-16FP-2G", watts: 279 },
         { name: "Cisco Smart CBS350-24P-4G", watts: 236 },
         { name: "Cisco Smart CBS350-48P-4G", watts: 445 },
         { name: "Cisco Smart CBS350-24FP-4G", watts: 438 },
