@@ -1,4 +1,3 @@
 # ups-calculator
-ups-calculator-internet use only 
-from mehroz 
+ups-calculator for internet use only not a professional solution.
 
